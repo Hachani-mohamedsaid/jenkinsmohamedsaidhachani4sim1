@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+
+    triggers {
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "Checkout code..."
+            }
+        }
+        stage('Build') {
+            steps {
+                echo "Build automatique via Webhook"
+                sh 'mvn clean install -DskipTests'
+            }
+        }
+    }
+}

@@ -13,7 +13,7 @@ pipeline {
         stage('Clone Repo') {
             steps {
                 // 👉 Ton vrai repo GitHub
-          git branch: 'main', url: 'https://github.com/Hachani-mohamedsaid/jenkinsmohamedsaidhachani4sim1.git'
+                git branch: 'main', url: 'https://github.com/Hachani-mohamedsaid/jenkinsmohamedsaidhachani4sim1.git'
             }
         }
 
@@ -25,7 +25,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKERHUB_IMAGE:latest .'
+                sh "docker build -t ${DOCKERHUB_IMAGE}:latest ."
             }
         }
 
@@ -33,7 +33,7 @@ pipeline {
             steps {
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'ilbab-credentials',  // 👉 Ton credential Jenkins
+                        credentialsId: 'dockerhub-creds',  // 👉 CORRIGÉ : utiliser l'ID défini dans Jenkins
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )
@@ -45,13 +45,14 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                sh 'docker push $DOCKERHUB_IMAGE:latest'
+                sh "docker push ${DOCKERHUB_IMAGE}:latest"
             }
         }
     }
 
     post {
         always {
+            sh 'docker logout || true'
             sh 'docker image prune -f || true'
         }
     }

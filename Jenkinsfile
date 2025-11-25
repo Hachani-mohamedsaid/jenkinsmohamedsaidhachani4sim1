@@ -1,23 +1,58 @@
 pipeline {
     agent any
 
+    environment {
+        // 👉 Ton vrai username Docker Hub
+        DOCKERHUB_USERNAME = 'hachanimohamedsaid'
+
+        // 👉 Nom de l'image Docker à publier
+        DOCKERHUB_IMAGE = "${DOCKERHUB_USERNAME}/student-management"
+    }
+
     stages {
         stage('Clone Repo') {
             steps {
-                git branch: 'main', url: 'https://github.com/Hachani-mohamedsaid/jenkinsmohamedsaidhachani4sim1.git'
+                // 👉 Ton vrai repo GitHub
+                git 'https://github.com/Hachani-mohamedsaid/jenkinsmohamedsaidhachani4sim1.git'
             }
         }
 
-        stage('Build') {
+        stage('Build JAR') {
             steps {
-                echo "Build terminé"
+                sh 'mvn clean package -DskipTests'
             }
         }
 
-        stage('Test') {
+        stage('Build Docker Image') {
             steps {
-                echo "Tests exécutés"
+                sh 'docker build -t $DOCKERHUB_IMAGE:latest .'
             }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',  // 👉 Ton credential Jenkins
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                sh 'docker push $DOCKERHUB_IMAGE:latest'
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker image prune -f || true'
         }
     }
 }

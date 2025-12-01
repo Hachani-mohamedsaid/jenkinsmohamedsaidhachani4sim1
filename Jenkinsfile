@@ -48,6 +48,12 @@ pipeline {
                 sh "docker push ${DOCKERHUB_IMAGE}:latest"
             }
         }
+
+        stage('Analyse SonarQube') {
+            steps {
+                sh 'mvn sonar:sonar -Dsonar.host.url=http://10.211.55.4:9000 -Dsonar.token=squ_54f6daad603d47d3044860ebcb7b4da46c8d41ac'
+            }
+        }
     }
 
     post {
